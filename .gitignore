@@ -5,3 +5,4 @@ downloads/*.gz
 downloads/*.tgz
 downloads/*.sha1
 druid/parcel.json
+druid/druid_env.sh
