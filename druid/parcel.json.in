@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "name": "DRUID",
+  "version": "%%DRUID_VERSION%%-%%PARCEL_VERSION%%",
+  "setActiveSymlink": true,
+  "depends": "",
+  "replaces": "",
+  "conflicts": "",
+  "provides": [
+    "druid"
+  ],
+  "scripts": {
+    "defines": "druid_env.sh"
+  },
+  "packages": [
+    {
+      "name": "druid",
+      "version": "%%PARCEL_VERSION%%"
+    }
+  ],
+  "components": [
+    {
+      "name": "druid",
+      "version": "%%DRUID_VERSION%%",
+      "pkg_version": "%%PARCEL_VERSION%%",
+      "pkg_release": "%%PARCEL_VERSION%%"
+    }
+  ],
+  "users": {
+    "druid": {
+      "longname": "Druid",
+      "home": "/opt/druid",
+      "shell": "/bin/bash",
+      "extra_groups": []
+    }
+  },
+  "groups": [
+    "druid"
+  ]
+}
