@@ -2,6 +2,11 @@
   "schema_version": 1,
   "name": "DRUID",
   "version": "%%DRUID_VERSION%%-%%PARCEL_VERSION%%",
+  "extraVersionInfo": {
+    "fullVersion": "%%DRUID_VERSION%%-%%PARCEL_VERSION%%-%%OS%%",
+    "baseVersion": "druid%%DRUID_VERSION%%",
+    "patchCount": "0"
+  },
   "setActiveSymlink": true,
   "depends": "",
   "replaces": "",

@@ -6,6 +6,7 @@ clean:
 	rm -rf *~ build $(PARCEL_DIR)
 	mkdir -p downloads
 	mkdir -p $(PARCEL_DIR)
+	$(MAKE) -C druid clean
 
 downloads/druid-$(DRUID_VERSION)-bin.tar.gz:
 	cd downloads && $(MAKE)
@@ -27,7 +28,7 @@ build/$(DRUID_PARCEL_NAME).sha: build/$(DRUID_PARCEL_NAME)
 
 build: build/$(DRUID_PARCEL_NAME).sha
 
-install: build/$(DRUID_PARCEL_NAME).sha
+install:
 	cp build/$(DRUID_PARCEL_NAME) $(PARCEL_DIR)
 	cp build/$(DRUID_PARCEL_NAME).sha $(PARCEL_DIR)
 	python make_manifest.py $(PARCEL_DIR)
