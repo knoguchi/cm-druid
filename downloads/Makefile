@@ -1,19 +1,19 @@
 include ../config.mk
 
-.SUFFIXES: .sha1
+.SUFFIXES: .sha
 
 default:: download
 
 clean:
-	rm -f *~ *.tar.gz *.tgz 
+	rm -f *~ *.tar.gz *.tgz *.sha
 
-$(DRUID_TAR).sha1: $(DRUID_TAR)
+$(DRUID_TAR).sha: $(DRUID_TAR)
 	shasum $< > $@
 
-$(TRANQUILITY_TAR).sha1: $(TRANQUILITY_TAR)
+$(TRANQUILITY_TAR).sha: $(TRANQUILITY_TAR)
 	shasum $< > $@
 
-$(MYSQL_EXT_TAR).sha1: $(MYSQL_EXT_TAR)
+$(MYSQL_EXT_TAR).sha: $(MYSQL_EXT_TAR)
 	shasum $< > $@
 
 $(DRUID_TAR):
@@ -25,4 +25,4 @@ $(TRANQUILITY_TAR):
 $(MYSQL_EXT_TAR): 
 	wget $(MYSQL_EXT_URL) -O $(MYSQL_EXT_TAR)
 
-download: $(DRUID_TAR).sha1 $(TRANQUILITY_TAR).sha1 $(MYSQL_EXT_TAR).sha1
+download: $(DRUID_TAR).sha $(TRANQUILITY_TAR).sha $(MYSQL_EXT_TAR).sha
