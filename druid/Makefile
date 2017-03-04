@@ -15,4 +15,4 @@ clean:
 	sed -e 's/%%DRUID_PARCEL%%/$(DRUID_PARCEL)/g' \
 	<$<>$@
 
-build: parcel.json druid_env.sh
+build: ../config.mk parcel.json druid_env.sh

@@ -21,6 +21,7 @@ build/$(DRUID_PARCEL_NAME): druid/parcel.json downloads/druid-$(DRUID_VERSION)-b
 		mv druid-$(DRUID_VERSION) $(DRUID_PARCEL) && \
 		mkdir -p $(DRUID_PARCEL)/meta && \
 		cp ../druid/parcel.json $(DRUID_PARCEL)/meta && \
+		cp ../druid/druid_env.sh $(DRUID_PARCEL)/meta && \
 		tar czf $(DRUID_PARCEL_NAME) $(DRUID_PARCEL)
 
 build/$(DRUID_PARCEL_NAME).sha: build/$(DRUID_PARCEL_NAME)
