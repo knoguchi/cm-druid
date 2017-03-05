@@ -1,0 +1,623 @@
+{
+  "name": "DRUID",
+  "label": "Druid",
+  "description": "Druid is a high-performance, column-oriented, distributed data store.",
+  "version": "5.8.0",
+  "runAs": {
+    "user": "druid",
+    "group": "druid"
+  },
+  "icon": "images/icon.png",
+  "parcel": {
+    "repoUrl": "http://localhost/parcels/latest/",
+    "requiredTags": [
+      "cdh",
+      "druid"
+    ],
+    "optionalTags": [
+      "druid-plugin"
+    ]
+  },
+  "serviceDependencies": [
+    {
+      "name": "HDFS",
+      "required": "false"
+    }
+  ],
+  "hdfsDirs": [
+    {
+      "name": "CreateDruidUserDirCommand",
+      "label": "Create Druid User Dir",
+      "description": "Create the Druid user directory in HDFS.",
+      "directoryDescription": "Druid HDFS user directory",
+      "path": "/user/${user}",
+      "permissions": "0751"
+    },
+    {
+      "name": "CreateDruidStorageDirCommand",
+      "label": "Create Druid Storage Dir",
+      "description": "Create the directory in HDFS where segment files will be stored.",
+      "directoryDescription": "Druid segments directory",
+      "path": "${druid_storage_dir}",
+      "permissions": "1777"
+    },
+    {
+      "name": "CreateDruidIndexerLogDirCommand",
+      "label": "Create Druid Indexer Log Dir",
+      "description": "Create the directory in HDFS where indexer logs will be stored.",
+      "directoryDescription": "Druid indexer log directory",
+      "path": "${druid_indexer_log_dir}",
+      "permissions": "1777"
+    }
+  ],
+  "serviceInit": {
+    "preStartSteps": [
+      {
+        "commandName": "CreateDruidUserDirCommand"
+      },
+      {
+        "commandName": "CreateDruidStorageDirCommand"
+      },
+      {
+        "commandName": "CreateDruidIndexerLogDirCommand"
+      }
+      //      ,{
+      //        "commandName": "CreateDruidMetadataStorageCommand"
+      //      }
+    ]
+  },
+  "parameters": [
+    {
+      "name": "druid_extensions_loadList",
+      "label": "Druid Extensions",
+      "description": "List of Druid extensions",
+      "configName": "druid.extensions.loadList",
+      "default": "[\"druid-histogram\",\"druid-datasketches\",\"druid-lookups-cached-global\",\"mysql-metadata-storage\"]",
+      "type": "string"
+    },
+    {
+      "name": "druid_zk_service_host",
+      "label": "Druid Zookeeper Service Host",
+      "description": "The host name of the Zookeeper",
+      "configName": "druid.zk.service.host",
+      "default": "localhost:2181",
+      "type": "string"
+    },
+    {
+      "name": "druid_zk_paths_base",
+      "label": "Druid Zookeeper Paths Base",
+      "description": "Zookeeper paths base for Druid",
+      "configName": "druid.zk.paths.base",
+      "default": "/druid",
+      "type": "string"
+    },
+    {
+      "name": "druid_metadata_storage_type",
+      "label": "Druid Metadata Storage Type",
+      "description": "Database type for the metadata storage",
+      "configName": "druid.metadata.storage.type",
+      "default": "mysql",
+      "type": "string"
+    },
+    {
+      "name": "druid_metadata_storage_connector_connectURI",
+      "label": "Meatadata Storage Connector Connect URI",
+      "description": "JDBC URI",
+      "configName": "druid.metadata.storage.connector.connectURI",
+      "default": "jdbc:mysql://localhost:3306/druid",
+      "type": "string"
+    },
+    {
+      "name": "druid_metadata_storage_connector_user",
+      "label": "Meatadata Storage User",
+      "description": "db user",
+      "configName": "druid.metadata.storage.connector.user",
+      "default": "root",
+      "type": "string"
+    },
+    {
+      "name": "druid_metadata_storage_connector_password",
+      "label": "Meatadata Storage Password",
+      "description": "db password",
+      "configName": "druid.metadata.storage.connector.password",
+      "default": "cloudera",
+      "type": "string"
+    },
+    {
+      "name": "druid_storage_dir",
+      "label": "Druid Storage Location (HDFS)",
+      "description": "The location of Druid segments in HDFS. Changing this value will not move existing segments to the new location.",
+      "configName": "druid.storage.storageDirectory",
+      "default": "/user/druid/segments",
+      "type": "string"
+    },
+    {
+      "name": "druid_indexer_log_dir",
+      "label": "Druid Indexer Log Location (HDFS)",
+      "description": "The location of Druid indexer logs in HDFS. Changing this value will not move existing segments to the new location.",
+      "configName": "druid.indexer.logs.directory",
+      "default": "/user/druid/log",
+      "type": "string"
+    }
+  ],
+  "rolesWithExternalLinks": [
+    "DRUID_OVERLORD",
+    "DRUID_COORDINATOR",
+    "DRUID_BROKER"
+  ],
+  "roles": [
+    {
+      "name": "DRUID_OVERLORD",
+      "label": "Overlord",
+      "pluralLabel": "Overlords",
+      "jvmBased": true,
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "overlord",
+          "start"
+        ],
+        "environmentVariables": {
+        }
+      },
+      "externalLink": {
+        "name": "overlord_console",
+        "label": "Overlord Console",
+        "url": "http://${host}:${overlord_port}"
+      },
+      "topology": {
+        "minInstances": 1,
+        "maxInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "druid-overlord-${host}.log",
+        "configName": "log.dir",
+        "modifiable": true,
+        "loggingType": "log4j"
+      },
+      "parameters": [
+        {
+          "name": "overlord_port",
+          "label": "Overlord Port",
+          "description": "The port of the overlord",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 18090
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "conf/_common/common.runtime.properties",
+            "includedParams": [
+              "druid_extensions_loadList",
+              "druid_zk_service_host",
+              "druid_zk_paths_base",
+              "druid_metadata_storage_type",
+              "druid_metadata_storage_connector_connectURI",
+              "druid_metadata_storage_connector_user",
+              "druid_metadata_storage_connector_password"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.service",
+                "value": "druid/overlord"
+              },
+              {
+                "key": "druid.indexer.queue.startDelay",
+                "value": "PT30S"
+              },
+              {
+                "key": "druid.indexer.runner.type",
+                "value": "remote"
+              },
+              {
+                "key": "druid.indexer.storage.type",
+                "value": "metadata"
+              },
+              {
+                "key": "druid.extensions.directory",
+                "value": "{{DRUID_HOME}}/extensions"
+              }
+            ],
+            "configFormat": "properties"
+          },
+          {
+            "filename": "conf/overlord/runtime.properties",
+            "includedParams": [
+              "overlord_port"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.service",
+                "value": "druid/overlord"
+              },
+              {
+                "key": "druid.indexer.queue.startDelay",
+                "value": "PT30S"
+              },
+              {
+                "key": "druid.indexer.runner.type",
+                "value": "remote"
+              },
+              {
+                "key": "druid.indexer.storage.type",
+                "value": "metadata"
+              }
+            ],
+            "configFormat": "properties"
+          },
+          {
+            "filename": "conf/overlord/jvm.config",
+            "configFormat": "properties"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_COORDINATOR",
+      "label": "Coordinator",
+      "pluralLabel": "Coordinators",
+      "jvmBased": true,
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "coordinator",
+          "start"
+        ],
+        "environmentVariables": {
+        }
+      },
+      "externalLink": {
+        "name": "coordinator_console",
+        "label": "Coordinator Console",
+        "url": "http://${host}:${coordinator_port}"
+      },
+      "topology": {
+        "minInstances": 1,
+        "maxInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "druid-coordinator-${host}.log",
+        "configName": "log.dir",
+        "modifiable": true,
+        "loggingType": "log4j"
+      },
+      "parameters": [
+        {
+          "name": "coordinator_port",
+          "label": "Coordinator Port",
+          "description": "The port of the coordinator",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 18081
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "conf/_common/common.runtime.properties",
+            "includedParams": [
+              "druid_extensions_loadList",
+              "druid_zk_service_host",
+              "druid_zk_paths_base",
+              "druid_metadata_storage_type",
+              "druid_metadata_storage_connector_connectURI",
+              "druid_metadata_storage_connector_user",
+              "druid_metadata_storage_connector_password"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.extensions.directory",
+                "value": "{{DRUID_HOME}}/extensions"
+              }
+            ],
+            "configFormat": "properties"
+          },
+          {
+            "filename": "conf/coordinator/runtime.properties",
+            "includedParams": [
+              "coordinator_port"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.service",
+                "value": "druid/coordinator"
+              }
+            ],
+            "configFormat": "properties"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_BROKER",
+      "label": "Broker",
+      "pluralLabel": "Brokers",
+      "jvmBased": true,
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "broker",
+          "start"
+        ],
+        "environmentVariables": {
+        }
+      },
+      "externalLink": {
+        "name": "broker_console",
+        "label": "Broker Console",
+        "url": "http://${host}:${broker_port}"
+      },
+      "topology": {
+        "minInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "druid-broker-${host}.log",
+        "configName": "log.dir",
+        "modifiable": true,
+        "loggingType": "log4j"
+      },
+      "parameters": [
+        {
+          "name": "broker_port",
+          "label": "Broker Port",
+          "description": "The port of the broker",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 18082
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "conf/_common/common.runtime.properties",
+            "includedParams": [
+              "druid_extensions_loadList",
+              "druid_zk_service_host",
+              "druid_zk_paths_base",
+              "druid_metadata_storage_type",
+              "druid_metadata_storage_connector_connectURI",
+              "druid_metadata_storage_connector_user",
+              "druid_metadata_storage_connector_password"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.extensions.directory",
+                "value": "{{DRUID_HOME}}/extensions"
+              }
+            ],
+            "configFormat": "properties"
+          },
+          {
+            "filename": "conf/broker/runtime.properties",
+            "includedParams": [
+              "broker_port"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.service",
+                "value": "druid/broker"
+              },
+              {
+                "key": "druid.broker.http.numConnections",
+                "value": 5
+              },
+              {
+                "key": "druid.server.http.numThreads",
+                "value": 40
+              },
+              {
+                "key": "druid.processing.buffer.sizeBytes",
+                "value": 256000000
+              },
+              {
+                "key": "druid.processing.numMergeBuffers",
+                "value": 2
+              },
+              {
+                "key": "druid.processing.numThreads",
+                "value": 2
+              },
+              {
+                "key": "druid.broker.cache.useCache",
+                "value": "false"
+              },
+              {
+                "key": "druid.broker.cache.populateCache",
+                "value": "false"
+              }
+            ],
+            "configFormat": "properties"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_MIDDLE_MANAGER",
+      "label": "Middle Manager",
+      "pluralLabel": "Middle Managers",
+      "jvmBased": true,
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "middleManager",
+          "start"
+        ],
+        "environmentVariables": {
+        }
+      },
+      "topology": {
+        "minInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "druid-middlemanager-${host}.log",
+        "configName": "log.dir",
+        "modifiable": true,
+        "loggingType": "log4j"
+      },
+      "parameters": [
+        {
+          "name": "middle_manager_port",
+          "label": "Middle Manager Port",
+          "description": "The port of the middle manager",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 18091
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "conf/_common/common.runtime.properties",
+            "includedParams": [
+              "druid_extensions_loadList",
+              "druid_zk_service_host",
+              "druid_zk_paths_base",
+              "druid_metadata_storage_type",
+              "druid_metadata_storage_connector_connectURI",
+              "druid_metadata_storage_connector_user",
+              "druid_metadata_storage_connector_password"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.extensions.directory",
+                "value": "{{DRUID_HOME}}/extensions"
+              }
+            ],
+            "configFormat": "properties"
+          },
+          {
+            "filename": "conf/middleManager/runtime.properties",
+            "includedParams": [
+              "middle_manager_port"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.service",
+                "value": "druid/middlemanager"
+              }
+            ],
+            "configFormat": "properties"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DRUID_HISTORICAL",
+      "label": "Historical",
+      "pluralLabel": "Historicals",
+      "jvmBased": true,
+      "startRunner": {
+        "program": "scripts/control.sh",
+        "args": [
+          "historical",
+          "start"
+        ],
+        "environmentVariables": {
+        }
+      },
+      "topology": {
+        "minInstances": 1
+      },
+      "logging": {
+        "dir": "/var/log/druid",
+        "filename": "druid-historical-${host}.log",
+        "configName": "log.dir",
+        "modifiable": true,
+        "loggingType": "log4j"
+      },
+      "parameters": [
+        {
+          "name": "historical_port",
+          "label": "Historical Port",
+          "description": "The port of the historical",
+          "configName": "druid.port",
+          "required": "true",
+          "type": "port",
+          "default": 18083
+        }
+      ],
+      "configWriter": {
+        "generators": [
+          {
+            "filename": "conf/_common/common.runtime.properties",
+            "includedParams": [
+              "druid_extensions_loadList",
+              "druid_zk_service_host",
+              "druid_zk_paths_base",
+              "druid_metadata_storage_type",
+              "druid_metadata_storage_connector_connectURI",
+              "druid_metadata_storage_connector_user",
+              "druid_metadata_storage_connector_password"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.extensions.directory",
+                "value": "{{DRUID_HOME}}/extensions"
+              }
+            ],
+            "configFormat": "properties"
+          },
+          {
+            "filename": "conf/historical/runtime.properties",
+            "includedParams": [
+              "historical_port"
+            ],
+            "additionalConfigs": [
+              {
+                "key": "druid.service",
+                "value": "druid/historical"
+              },
+              {
+                "key": "druid.server.http.numThreads",
+                "value": 40
+              },
+              {
+                "key": "druid.processing.buffer.sizeBytes",
+                "value": 256000000
+              },
+              {
+                "key": "druid.processing.numMergeBuffers",
+                "value": 2
+              },
+              {
+                "key": "druid.processing.numThreads",
+                "value": 2
+              },
+              {
+                "key": "druid.segmentCache.locations",
+                "value": "[{\"path\":\"var/druid/segment-cache\",\"maxSize\":300000000000}]"
+              },
+              {
+                "key": "druid.server.maxSize",
+                "value": 300000000000
+              },
+              {
+                "key": "druid.historical.cache.useCache",
+                "value": "true"
+              },
+              {
+                "key": "druid.cache.type",
+                "value": "local"
+              },
+              {
+                "key": "druid.cache.sizeInBytes",
+                "value": 10000000
+              }
+            ],
+            "configFormat": "properties"
+          }
+        ]
+      }
+    }
+  ]
+}

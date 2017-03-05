@@ -3,6 +3,7 @@ build/
 parcel/
 downloads/*.gz
 downloads/*.tgz
+downloads/*.sha
 downloads/*.sha1
 druid/parcel.json
 druid/druid_env.sh
