@@ -19,6 +19,7 @@ build/$(DRUID_PARCEL_NAME): druid/parcel.json downloads/druid-$(DRUID_VERSION)-b
 	cd build && \
 		tar xf ../downloads/$(DRUID_TAR) && \
 		mv druid-$(DRUID_VERSION) $(DRUID_PARCEL) && \
+                tar xf ../downloads/$(MYSQL_EXT_TAR) -C $(DRUID_PARCEL)/extensions && \
 		mkdir -p $(DRUID_PARCEL)/meta && \
 		cp ../druid/parcel.json $(DRUID_PARCEL)/meta && \
 		cp ../druid/druid_env.sh $(DRUID_PARCEL)/meta && \
