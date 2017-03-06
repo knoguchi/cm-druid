@@ -1,9 +1,8 @@
 *~
 build/
-parcel/
-downloads/*.gz
-downloads/*.tgz
-downloads/*.sha
-downloads/*.sha1
+parcel/downloads/*.gz
+parcel/downloads/*.tgz
 druid/parcel.json
 druid/druid_env.sh
+csd/target/
+dist/

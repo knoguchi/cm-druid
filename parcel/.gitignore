@@ -1,0 +1,5 @@
+src/druid_env.sh
+src/parcel.json
+downloads/*.tgz
+downloads/*.gz
+
