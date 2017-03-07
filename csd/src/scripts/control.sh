@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=$(dirname "$0")
+
 # Time marker for both stderr and stdout
 date; date 1>&2
 
@@ -71,13 +73,41 @@ export DRUID_LIB_DIR=$DRUID_HOME/lib
 
 perl -pi -e "s#{{DRUID_HOME}}#${DRUID_HOME}#" ${DRUID_CONF_DIR}/_common/common.runtime.properties
 
-DRUID_JAVA_OPTS="-Xms1g -Xmx1g -XX:MaxDirectMemorySize=1280m -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.io.tmpdir=$CONF_DIR/tmp -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager"
-export JAVA_OPTS="$CSD_JAVA_OPTS $DRUID_JAVA_OPTS"
+# convert log4j properties to log4j2 xml
+python $SCRIPT_DIR/log4j_conv.py -i $CONF_DIR/log4j.properties -o $CONF_DIR/log4j2.xml
+
+COMMON_JAVA_OPTS="-Xms1g -XX:MaxDirectMemorySize=1280m -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.io.tmpdir=$CONF_DIR/tmp -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile=$CONF_DIR/log4j2.xml"
+
+DEFAULT_HEAP_SIZE=1g
+DRUID_JAVA_OPTS="-Xmx${DEFAULT_HEAP_SIZE}"
+
+# Configure JAVA options for each type
+case ${NODE_TYPE} in
+    (overlord)
+        DRUID_JAVA_OPTS="-Xmx${OVERLORD_HEAP_SIZE}M"
+        ;;
+    (coordinator)
+        DRUID_JAVA_OPTS="-Xmx${COORDINATOR_HEAP_SIZE}M"
+        ;;
+    (middleManager)
+        DRUID_JAVA_OPTS="-Xmx${MIDDLE_MANAGER_HEAP_SIZE}M"
+        ;;
+    (historical)
+        DRUID_JAVA_OPTS="-Xmx${HISTORICAL_HEAP_SIZE}M"
+        ;;
+    (broker)
+        DRUID_JAVA_OPTS="-Xmx${BROKER_HEAP_SIZE}M"
+        ;;
+    (*)
+        ;;
+esac
+
+DRUID_JAVA_OPTS="$DRUID_JAVA_OPTS $CSD_JAVA_OPTS $COMMON_JAVA_OPTS"
 
 case ${CMD} in
     (start)
-        echo java $JAVA_OPTS -cp $DRUID_HOME/conf/_common/log4j2.xml:$DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
-        exec java $JAVA_OPTS -cp $DRUID_HOME/conf/_common/log4j2.xml:$DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
+        echo java $DRUID_JAVA_OPTS -cp $DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
+        exec java $DRUID_JAVA_OPTS -cp $DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
         ;;
     (*)
         echo "Unknown command ${CMD}"
