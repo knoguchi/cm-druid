@@ -523,6 +523,40 @@
           "softMax": 16384,
           "unit": "megabytes",
           "scaleFactor" : 1.3
+        },
+        {
+          "name": "druid_processing_buffer_sizeBytes",
+          "label": "Processing Buffer Size",
+          "description": "This specifies a buffer size for the storage of intermediate results. The computation engine in both the Historical and Realtime nodes will use a scratch buffer of this size to do all of their intermediate computations off-heap. Larger values allow for more aggregations in a single pass over the data while smaller values can require more passes depending on the query that is being executed.",
+          "configName": "druid.processing.buffer.sizeBytes",
+          "type": "memory",
+          "default": 536870912,
+          "unit": "bytes"
+        },
+        {
+          "name": "druid_processing_numThreads",
+          "label": "Processing Buffer Size",
+          "description": "The number of processing threads to have available for parallel processing of segments. Our rule of thumb is num_cores - 1, which means that even under heavy load there will still be one core available to do background tasks like talking with ZooKeeper and pulling down segments. If only one core is available, this property defaults to the value 1.",
+          "configName": "druid.processing.numThreads",
+          "type": "long",
+          "default": 2
+        },
+        {
+          "name": "druid_indexer_runner_javaOptsArray",
+          "label": "Druid Indexer Runner Java Options Array",
+          "description": "A json array of strings to be passed in as options to the peon's jvm.",
+          "configName": "druid.indexer.runner.javaOptsArray",
+          "default": "[\"-server\", \"-Xmx3g\", \"-XX:+UseG1GC\", \"-XX:MaxGCPauseMillis=100\", \"-XX:+PrintGCDetails\", \"-XX:+PrintGCTimeStamps\"]",
+          "type": "string"
+        },
+        {
+          "name": "druid_worker_capacity",
+          "label": "Druid Worker Capacity",
+          "description": "Maximum number of tasks the middle manager can accept.",
+          "configName": "druid.worker.capacity",
+          "type": "long",
+          "default": 2,
+          "min": 1
         }
       ],
       "configWriter": {
@@ -549,7 +583,11 @@
           {
             "filename": "conf/middleManager/runtime.properties",
             "includedParams": [
-              "middle_manager_port"
+              "middle_manager_port",
+              "druid_processing_buffer_sizeBytes",
+              "druid_processing_numThreads",
+              "druid_indexer_runner_javaOptsArray",
+              "druid_worker_capacity"
             ],
             "additionalConfigs": [
               {
