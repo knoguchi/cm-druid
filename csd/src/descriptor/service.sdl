@@ -46,7 +46,7 @@
       "label": "Create Druid Indexer Log Dir",
       "description": "Create the directory in HDFS where indexer logs will be stored.",
       "directoryDescription": "Druid indexer log directory",
-      "path": "${druid_indexer_log_dir}",
+      "path": "${druid_indexer_logs_directory}",
       "permissions": "1777"
     }
   ],
@@ -61,12 +61,19 @@
       {
         "commandName": "CreateDruidIndexerLogDirCommand"
       }
-      //      ,{
-      //        "commandName": "CreateDruidMetadataStorageCommand"
-      //      }
     ]
   },
   "parameters": [
+    {
+      "name": "druid_persistent_dir",
+      "label": "Local Persistent Directory",
+      "description": "Druid saves tasks and segments temporarily in the local disk.  This directory must retain data over reboot and reconfiguration.",
+      "default": "/var/tmp/druid",
+      "type": "path",
+      "required": "true",
+      "pathType": "localDataDir",
+      "configurableInWizard": true
+    },
     {
       "name": "druid_extensions_loadList",
       "label": "Druid Extensions",
@@ -74,6 +81,14 @@
       "configName": "druid.extensions.loadList",
       "default": "[\"druid-histogram\",\"druid-datasketches\",\"druid-lookups-cached-global\",\"mysql-metadata-storage\"]",
       "type": "string"
+    },
+    {
+      "name": "druid_startup_logging_logProperties",
+      "label": "Druid Startup Logging Properties",
+      "description": "Log all properties on startup (from common.runtime.properties, runtime.properties, and the JVM command line).",
+      "configName": "druid.startup.logging.logProperties",
+      "default": "true",
+      "type": "boolean"
     },
     {
       "name": "druid_zk_service_host",
@@ -124,6 +139,14 @@
       "type": "string"
     },
     {
+      "name": "druid_storage_type",
+      "label": "Druid Storage Type",
+      "description": "Location to save the segments",
+      "configName": "druid.storage.type",
+      "default": "hdfs",
+      "type": "string"
+    },
+    {
       "name": "druid_storage_dir",
       "label": "Druid Storage Location (HDFS)",
       "description": "The location of Druid segments in HDFS. Changing this value will not move existing segments to the new location.",
@@ -132,11 +155,19 @@
       "type": "string"
     },
     {
-      "name": "druid_indexer_log_dir",
-      "label": "Druid Indexer Log Location (HDFS)",
-      "description": "The location of Druid indexer logs in HDFS. Changing this value will not move existing segments to the new location.",
+      "name": "druid_indexer_logs_type",
+      "label": "Druid Indexer Logs Type",
+      "description": "If you are running the indexing service in remote mode, the task logs must be stored in S3, Azure Blob Store or HDFS.",
+      "configName": "druid.indexer.logs.type",
+      "default": "hdfs",
+      "type": "string"
+    },
+    {
+      "name": "druid_indexer_logs_directory",
+      "label": "Druid Indexer Logs Directory",
+      "description": "The directory to store logs.",
       "configName": "druid.indexer.logs.directory",
-      "default": "/user/druid/log",
+      "default": "/druid/log",
       "type": "string"
     }
   ],
@@ -157,7 +188,8 @@
           "start"
         ],
         "environmentVariables": {
-          "OVERLORD_HEAP_SIZE": "${overlord_max_heap_size}"
+          "OVERLORD_HEAP_SIZE": "${overlord_max_heap_size}",
+          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
         }
       },
       "externalLink": {
@@ -196,7 +228,7 @@
           "softMin": 2048,
           "softMax": 16384,
           "unit": "megabytes",
-          "scaleFactor" : 1.3
+          "scaleFactor": 1.3
         }
       ],
       "configWriter": {
@@ -205,33 +237,46 @@
             "filename": "conf/_common/common.runtime.properties",
             "includedParams": [
               "druid_extensions_loadList",
-              "druid_zk_service_host",
-              "druid_zk_paths_base",
               "druid_metadata_storage_type",
               "druid_metadata_storage_connector_connectURI",
               "druid_metadata_storage_connector_user",
-              "druid_metadata_storage_connector_password"
+              "druid_metadata_storage_connector_password",
+              "druid_indexer_logs_type",
+              "druid_indexer_logs_directory",
+              "druid_startup_logging_logProperties",
+              "druid_storage_dir",
+              "druid_storage_type",
+              "druid_zk_paths_base",
+              "druid_zk_service_host"
             ],
             "additionalConfigs": [
               {
-                "key": "druid.service",
+                "key": "druid.extensions.directory",
+                "value": "{{DRUID_HOME}}/extensions"
+              },
+              {
+                "key": "druid.extensions.hadoopDependenciesDir",
+                "value": "{{DRUID_HOME}}/hadoop-dependencies"
+              },
+              {
+                "key": "druid.selectors.indexing.serviceName",
                 "value": "druid/overlord"
               },
               {
-                "key": "druid.indexer.queue.startDelay",
-                "value": "PT30S"
+                "key": "druid.selectors.coordinator.serviceName",
+                "value": "druid/coordinator"
               },
               {
-                "key": "druid.indexer.runner.type",
-                "value": "remote"
+                "key": "druid.request.logging.feed",
+                "value": "druid_requests"
               },
               {
-                "key": "druid.indexer.storage.type",
-                "value": "metadata"
+                "key": "druid.request.logging.type",
+                "value": "emitter"
               },
               {
-                "key": "druid.extensions.directory",
-                "value": "{{DRUID_HOME}}/extensions"
+                "key": "druid.monitoring.emissionPeriod",
+                "value": "PT1m"
               }
             ],
             "configFormat": "properties"
@@ -260,10 +305,6 @@
               }
             ],
             "configFormat": "properties"
-          },
-          {
-            "filename": "conf/overlord/jvm.config",
-            "configFormat": "properties"
           }
         ]
       }
@@ -280,7 +321,8 @@
           "start"
         ],
         "environmentVariables": {
-          "COORDINATOR_HEAP_SIZE": "${coordinator_max_heap_size}"
+          "COORDINATOR_HEAP_SIZE": "${coordinator_max_heap_size}",
+          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
         }
       },
       "externalLink": {
@@ -319,7 +361,7 @@
           "softMin": 2048,
           "softMax": 16384,
           "unit": "megabytes",
-          "scaleFactor" : 1.3
+          "scaleFactor": 1.3
         }
       ],
       "configWriter": {
@@ -328,17 +370,46 @@
             "filename": "conf/_common/common.runtime.properties",
             "includedParams": [
               "druid_extensions_loadList",
-              "druid_zk_service_host",
-              "druid_zk_paths_base",
               "druid_metadata_storage_type",
               "druid_metadata_storage_connector_connectURI",
               "druid_metadata_storage_connector_user",
-              "druid_metadata_storage_connector_password"
+              "druid_metadata_storage_connector_password",
+              "druid_indexer_logs_type",
+              "druid_indexer_logs_directory",
+              "druid_startup_logging_logProperties",
+              "druid_storage_dir",
+              "druid_storage_type",
+              "druid_zk_paths_base",
+              "druid_zk_service_host"
             ],
             "additionalConfigs": [
               {
                 "key": "druid.extensions.directory",
                 "value": "{{DRUID_HOME}}/extensions"
+              },
+              {
+                "key": "druid.extensions.hadoopDependenciesDir",
+                "value": "{{DRUID_HOME}}/hadoop-dependencies"
+              },
+              {
+                "key": "druid.selectors.indexing.serviceName",
+                "value": "druid/overlord"
+              },
+              {
+                "key": "druid.selectors.coordinator.serviceName",
+                "value": "druid/coordinator"
+              },
+              {
+                "key": "druid.request.logging.feed",
+                "value": "druid_requests"
+              },
+              {
+                "key": "druid.request.logging.type",
+                "value": "emitter"
+              },
+              {
+                "key": "druid.monitoring.emissionPeriod",
+                "value": "PT1m"
               }
             ],
             "configFormat": "properties"
@@ -352,6 +423,14 @@
               {
                 "key": "druid.service",
                 "value": "druid/coordinator"
+              },
+              {
+                "key": "druid.coordinator.period",
+                "value": "PT30S"
+              },
+              {
+                "key": "druid.coordinator.startDelay",
+                "value": "PT30S"
               }
             ],
             "configFormat": "properties"
@@ -371,7 +450,8 @@
           "start"
         ],
         "environmentVariables": {
-          "BROKER_HEAP_SIZE": "${broker_max_heap_size}"
+          "BROKER_HEAP_SIZE": "${broker_max_heap_size}",
+          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
         }
       },
       "externalLink": {
@@ -409,7 +489,7 @@
           "softMin": 2048,
           "softMax": 16384,
           "unit": "megabytes",
-          "scaleFactor" : 1.3
+          "scaleFactor": 1.3
         }
       ],
       "configWriter": {
@@ -418,17 +498,46 @@
             "filename": "conf/_common/common.runtime.properties",
             "includedParams": [
               "druid_extensions_loadList",
-              "druid_zk_service_host",
-              "druid_zk_paths_base",
               "druid_metadata_storage_type",
               "druid_metadata_storage_connector_connectURI",
               "druid_metadata_storage_connector_user",
-              "druid_metadata_storage_connector_password"
+              "druid_metadata_storage_connector_password",
+              "druid_indexer_logs_type",
+              "druid_indexer_logs_directory",
+              "druid_startup_logging_logProperties",
+              "druid_storage_dir",
+              "druid_storage_type",
+              "druid_zk_paths_base",
+              "druid_zk_service_host"
             ],
             "additionalConfigs": [
               {
                 "key": "druid.extensions.directory",
                 "value": "{{DRUID_HOME}}/extensions"
+              },
+              {
+                "key": "druid.extensions.hadoopDependenciesDir",
+                "value": "{{DRUID_HOME}}/hadoop-dependencies"
+              },
+              {
+                "key": "druid.selectors.indexing.serviceName",
+                "value": "druid/overlord"
+              },
+              {
+                "key": "druid.selectors.coordinator.serviceName",
+                "value": "druid/coordinator"
+              },
+              {
+                "key": "druid.request.logging.feed",
+                "value": "druid_requests"
+              },
+              {
+                "key": "druid.request.logging.type",
+                "value": "emitter"
+              },
+              {
+                "key": "druid.monitoring.emissionPeriod",
+                "value": "PT1m"
               }
             ],
             "configFormat": "properties"
@@ -444,20 +553,12 @@
                 "value": "druid/broker"
               },
               {
-                "key": "druid.broker.http.numConnections",
-                "value": 5
-              },
-              {
                 "key": "druid.server.http.numThreads",
                 "value": 40
               },
               {
                 "key": "druid.processing.buffer.sizeBytes",
-                "value": 256000000
-              },
-              {
-                "key": "druid.processing.numMergeBuffers",
-                "value": 2
+                "value": 536870912
               },
               {
                 "key": "druid.processing.numThreads",
@@ -470,6 +571,10 @@
               {
                 "key": "druid.broker.cache.populateCache",
                 "value": "false"
+              },
+              {
+                "key": "druid.broker.http.numConnections",
+                "value": 5
               }
             ],
             "configFormat": "properties"
@@ -489,7 +594,8 @@
           "start"
         ],
         "environmentVariables": {
-          "MIDDLE_MANAGER_HEAP_SIZE": "${middle_manager_max_heap_size}"
+          "MIDDLE_MANAGER_HEAP_SIZE": "${middle_manager_max_heap_size}",
+          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
         }
       },
       "topology": {
@@ -517,12 +623,10 @@
           "label": "Java Heap Size of Middle Manager",
           "description": "Maximum size for the Java process heap memory. Passed to Java -Xmx. Measured in megabytes. Middle Manager does not generally require setting large heap sizes. It is better to let the file system cache utilize the available memory.",
           "type": "memory",
-          "default": 1024,
-          "min": 1024,
-          "softMin": 2048,
-          "softMax": 16384,
+          "default": 64,
+          "min": 64,
           "unit": "megabytes",
-          "scaleFactor" : 1.3
+          "scaleFactor": 1.3
         },
         {
           "name": "druid_processing_buffer_sizeBytes",
@@ -542,11 +646,19 @@
           "default": 2
         },
         {
+          "name": "druid_server_http_numThreads",
+          "label": "Druid Server Http Number of Threads",
+          "description": "Peon's HTTP server threads?",
+          "configName": "druid.server.http.numThreads",
+          "type": "long",
+          "default": 40
+        },
+        {
           "name": "druid_indexer_runner_javaOptsArray",
           "label": "Druid Indexer Runner Java Options Array",
           "description": "A json array of strings to be passed in as options to the peon's jvm.",
           "configName": "druid.indexer.runner.javaOptsArray",
-          "default": "[\"-server\", \"-Xmx3g\", \"-XX:+UseG1GC\", \"-XX:MaxGCPauseMillis=100\", \"-XX:+PrintGCDetails\", \"-XX:+PrintGCTimeStamps\"]",
+          "default": "[\"-server\", \"-Xmx3g\", \"-Duser.timezone=UTC\", \"-Dfile.encoding=UTF-8\", \"-XX:+UseG1GC\", \"-XX:MaxGCPauseMillis=100\", \"-XX:+PrintGCDetails\", \"-XX:+PrintGCTimeStamps\"]",
           "type": "string"
         },
         {
@@ -557,6 +669,25 @@
           "type": "long",
           "default": 2,
           "min": 1
+        },
+        {
+          "name": "druid_indexer_task_restoreTasksOnRestart",
+          "label": "Druid Indexer Task Restore on Restart",
+          "description": "Restore indexer tasks on restart",
+          "configName": "druid.indexer.task.restoreTasksOnRestart",
+          "default": "true",
+          "type": "boolean"
+        },
+        {
+          "name": "druid_indexer_task_baseTaskDir",
+          "label": "Druid Indexer Task Base Directory",
+          "description": "Druid stores the temporary task files in this directory of the local filesystem",
+          "configName": "druid.indexer.task.baseTaskDir",
+          "default": "${druid_persistent_dir}/task",
+          "type": "path",
+          "required": "true",
+          "pathType": "localDataDir",
+          "configurableInWizard": true
         }
       ],
       "configWriter": {
@@ -565,17 +696,46 @@
             "filename": "conf/_common/common.runtime.properties",
             "includedParams": [
               "druid_extensions_loadList",
-              "druid_zk_service_host",
-              "druid_zk_paths_base",
               "druid_metadata_storage_type",
               "druid_metadata_storage_connector_connectURI",
               "druid_metadata_storage_connector_user",
-              "druid_metadata_storage_connector_password"
+              "druid_metadata_storage_connector_password",
+              "druid_indexer_logs_type",
+              "druid_indexer_logs_directory",
+              "druid_startup_logging_logProperties",
+              "druid_storage_dir",
+              "druid_storage_type",
+              "druid_zk_paths_base",
+              "druid_zk_service_host"
             ],
             "additionalConfigs": [
               {
                 "key": "druid.extensions.directory",
                 "value": "{{DRUID_HOME}}/extensions"
+              },
+              {
+                "key": "druid.extensions.hadoopDependenciesDir",
+                "value": "{{DRUID_HOME}}/hadoop-dependencies"
+              },
+              {
+                "key": "druid.selectors.indexing.serviceName",
+                "value": "druid/overlord"
+              },
+              {
+                "key": "druid.selectors.coordinator.serviceName",
+                "value": "druid/coordinator"
+              },
+              {
+                "key": "druid.request.logging.feed",
+                "value": "druid_requests"
+              },
+              {
+                "key": "druid.request.logging.type",
+                "value": "emitter"
+              },
+              {
+                "key": "druid.monitoring.emissionPeriod",
+                "value": "PT1m"
               }
             ],
             "configFormat": "properties"
@@ -587,12 +747,19 @@
               "druid_processing_buffer_sizeBytes",
               "druid_processing_numThreads",
               "druid_indexer_runner_javaOptsArray",
-              "druid_worker_capacity"
+              "druid_worker_capacity",
+              "druid_indexer_task_restoreTasksOnRestart",
+              "druid_indexer_task_baseTaskDir",
+              "druid_server_http_numThreads"
             ],
             "additionalConfigs": [
               {
                 "key": "druid.service",
                 "value": "druid/middlemanager"
+              },
+              {
+                "key": "druid.indexer.task.defaultHadoopCoordinates",
+                "value": "[\"org.apache.hadoop:hadoop-client:2.3.0\"]"
               }
             ],
             "configFormat": "properties"
@@ -612,7 +779,8 @@
           "start"
         ],
         "environmentVariables": {
-          "HISTORICAL_HEAP_SIZE": "${historical_max_heap_size}"
+          "HISTORICAL_HEAP_SIZE": "${historical_max_heap_size}",
+          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
         }
       },
       "topology": {
@@ -645,7 +813,15 @@
           "softMin": 2048,
           "softMax": 16384,
           "unit": "megabytes",
-          "scaleFactor" : 1.3
+          "scaleFactor": 1.3
+        },
+        {
+          "name": "druid_segmentCache_locations",
+          "label": "Druid Segment Cache Locations",
+          "configName": "druid.segmentCache.locations",
+          "description": "Segments assigned to a Historical node are first stored on the local file system (in a disk cache) and then served by the Historical node. These locations define where that local cache resides. Must be under the base directory",
+          "default": "[{\"path\":\"{{DRUID_PERSISTENT_DIR}}/segment-cache\",\"maxSize\":300000000000}]",
+          "type": "string"
         }
       ],
       "configWriter": {
@@ -654,17 +830,46 @@
             "filename": "conf/_common/common.runtime.properties",
             "includedParams": [
               "druid_extensions_loadList",
-              "druid_zk_service_host",
-              "druid_zk_paths_base",
               "druid_metadata_storage_type",
               "druid_metadata_storage_connector_connectURI",
               "druid_metadata_storage_connector_user",
-              "druid_metadata_storage_connector_password"
+              "druid_metadata_storage_connector_password",
+              "druid_indexer_logs_type",
+              "druid_indexer_logs_directory",
+              "druid_startup_logging_logProperties",
+              "druid_storage_dir",
+              "druid_storage_type",
+              "druid_zk_paths_base",
+              "druid_zk_service_host"
             ],
             "additionalConfigs": [
               {
                 "key": "druid.extensions.directory",
                 "value": "{{DRUID_HOME}}/extensions"
+              },
+              {
+                "key": "druid.extensions.hadoopDependenciesDir",
+                "value": "{{DRUID_HOME}}/hadoop-dependencies"
+              },
+              {
+                "key": "druid.selectors.indexing.serviceName",
+                "value": "druid/overlord"
+              },
+              {
+                "key": "druid.selectors.coordinator.serviceName",
+                "value": "druid/coordinator"
+              },
+              {
+                "key": "druid.request.logging.feed",
+                "value": "druid_requests"
+              },
+              {
+                "key": "druid.request.logging.type",
+                "value": "emitter"
+              },
+              {
+                "key": "druid.monitoring.emissionPeriod",
+                "value": "PT1m"
               }
             ],
             "configFormat": "properties"
@@ -672,7 +877,8 @@
           {
             "filename": "conf/historical/runtime.properties",
             "includedParams": [
-              "historical_port"
+              "historical_port",
+              "druid_segmentCache_locations"
             ],
             "additionalConfigs": [
               {
@@ -696,15 +902,15 @@
                 "value": 2
               },
               {
-                "key": "druid.segmentCache.locations",
-                "value": "[{\"path\":\"var/druid/segment-cache\",\"maxSize\":300000000000}]"
-              },
-              {
                 "key": "druid.server.maxSize",
                 "value": 300000000000
               },
               {
                 "key": "druid.historical.cache.useCache",
+                "value": "true"
+              },
+              {
+                "key": "druid.historical.cache.populateCache",
                 "value": "true"
               },
               {

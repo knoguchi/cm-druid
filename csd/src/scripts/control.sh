@@ -72,11 +72,12 @@ fi
 export DRUID_LIB_DIR=$DRUID_HOME/lib
 
 perl -pi -e "s#{{DRUID_HOME}}#${DRUID_HOME}#" ${DRUID_CONF_DIR}/_common/common.runtime.properties
+perl -pi -e "s#{{DRUID_PERSIST_DIR}}#${DRUID_PERSISTENT_DIR}#" ${DRUID_CONF_DIR}/${NODE_TYPE}/runtime.properties
 
 # convert log4j properties to log4j2 xml
 python $SCRIPT_DIR/log4j_conv.py -i $CONF_DIR/log4j.properties -o $CONF_DIR/log4j2.xml
 
-COMMON_JAVA_OPTS="-Xms1g -XX:MaxDirectMemorySize=1280m -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.io.tmpdir=$CONF_DIR/tmp -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile=$CONF_DIR/log4j2.xml"
+COMMON_JAVA_OPTS="-Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.io.tmpdir=$CONF_DIR/tmp -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile=$CONF_DIR/log4j2.xml"
 
 DEFAULT_HEAP_SIZE=1g
 DRUID_JAVA_OPTS="-Xmx${DEFAULT_HEAP_SIZE}"
@@ -84,19 +85,19 @@ DRUID_JAVA_OPTS="-Xmx${DEFAULT_HEAP_SIZE}"
 # Configure JAVA options for each type
 case ${NODE_TYPE} in
     (overlord)
-        DRUID_JAVA_OPTS="-Xmx${OVERLORD_HEAP_SIZE}M"
+        DRUID_JAVA_OPTS="-Xmx${OVERLORD_HEAP_SIZE}M -XX:MaxDirectMemorySize=1280m"
         ;;
     (coordinator)
-        DRUID_JAVA_OPTS="-Xmx${COORDINATOR_HEAP_SIZE}M"
+        DRUID_JAVA_OPTS="-Xmx${COORDINATOR_HEAP_SIZE}M -XX:MaxDirectMemorySize=1280m"
         ;;
     (middleManager)
-        DRUID_JAVA_OPTS="-Xmx${MIDDLE_MANAGER_HEAP_SIZE}M"
+        DRUID_JAVA_OPTS="-Xmx${MIDDLE_MANAGER_HEAP_SIZE}M -XX:MaxDirectMemorySize=1280m"
         ;;
     (historical)
-        DRUID_JAVA_OPTS="-Xmx${HISTORICAL_HEAP_SIZE}M"
+        DRUID_JAVA_OPTS="-Xmx${HISTORICAL_HEAP_SIZE}M -XX:MaxDirectMemorySize=1280m"
         ;;
     (broker)
-        DRUID_JAVA_OPTS="-Xmx${BROKER_HEAP_SIZE}M"
+        DRUID_JAVA_OPTS="-Xmx${BROKER_HEAP_SIZE}M -XX:MaxDirectMemorySize=4096m"
         ;;
     (*)
         ;;
