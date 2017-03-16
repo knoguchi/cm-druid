@@ -188,8 +188,7 @@
           "start"
         ],
         "environmentVariables": {
-          "OVERLORD_HEAP_SIZE": "${overlord_max_heap_size}",
-          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
+          "OVERLORD_HEAP_SIZE": "${overlord_max_heap_size}"
         }
       },
       "externalLink": {
@@ -321,8 +320,7 @@
           "start"
         ],
         "environmentVariables": {
-          "COORDINATOR_HEAP_SIZE": "${coordinator_max_heap_size}",
-          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
+          "COORDINATOR_HEAP_SIZE": "${coordinator_max_heap_size}"
         }
       },
       "externalLink": {
@@ -450,8 +448,7 @@
           "start"
         ],
         "environmentVariables": {
-          "BROKER_HEAP_SIZE": "${broker_max_heap_size}",
-          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
+          "BROKER_HEAP_SIZE": "${broker_max_heap_size}"
         }
       },
       "externalLink": {
@@ -594,8 +591,7 @@
           "start"
         ],
         "environmentVariables": {
-          "MIDDLE_MANAGER_HEAP_SIZE": "${middle_manager_max_heap_size}",
-          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
+          "MIDDLE_MANAGER_HEAP_SIZE": "${middle_manager_max_heap_size}"
         }
       },
       "topology": {
@@ -677,17 +673,6 @@
           "configName": "druid.indexer.task.restoreTasksOnRestart",
           "default": "true",
           "type": "boolean"
-        },
-        {
-          "name": "druid_indexer_task_baseTaskDir",
-          "label": "Druid Indexer Task Base Directory",
-          "description": "Druid stores the temporary task files in this directory of the local filesystem",
-          "configName": "druid.indexer.task.baseTaskDir",
-          "default": "${druid_persistent_dir}/task",
-          "type": "path",
-          "required": "true",
-          "pathType": "localDataDir",
-          "configurableInWizard": true
         }
       ],
       "configWriter": {
@@ -749,7 +734,6 @@
               "druid_indexer_runner_javaOptsArray",
               "druid_worker_capacity",
               "druid_indexer_task_restoreTasksOnRestart",
-              "druid_indexer_task_baseTaskDir",
               "druid_server_http_numThreads"
             ],
             "additionalConfigs": [
@@ -760,6 +744,10 @@
               {
                 "key": "druid.indexer.task.defaultHadoopCoordinates",
                 "value": "[\"org.apache.hadoop:hadoop-client:2.3.0\"]"
+              },
+              {
+                "key": "druid.indexer.task.baseTaskDir",
+                "value": "${druid_persistent_dir}/task"
               }
             ],
             "configFormat": "properties"
@@ -779,8 +767,7 @@
           "start"
         ],
         "environmentVariables": {
-          "HISTORICAL_HEAP_SIZE": "${historical_max_heap_size}",
-          "DRUID_PERSISTENT_DIR": "${druid_persistent_dir}"
+          "HISTORICAL_HEAP_SIZE": "${historical_max_heap_size}"
         }
       },
       "topology": {
@@ -814,14 +801,6 @@
           "softMax": 16384,
           "unit": "megabytes",
           "scaleFactor": 1.3
-        },
-        {
-          "name": "druid_segmentCache_locations",
-          "label": "Druid Segment Cache Locations",
-          "configName": "druid.segmentCache.locations",
-          "description": "Segments assigned to a Historical node are first stored on the local file system (in a disk cache) and then served by the Historical node. These locations define where that local cache resides. Must be under the base directory",
-          "default": "[{\"path\":\"{{DRUID_PERSISTENT_DIR}}/segment-cache\",\"maxSize\":300000000000}]",
-          "type": "string"
         }
       ],
       "configWriter": {
@@ -877,8 +856,7 @@
           {
             "filename": "conf/historical/runtime.properties",
             "includedParams": [
-              "historical_port",
-              "druid_segmentCache_locations"
+              "historical_port"
             ],
             "additionalConfigs": [
               {
@@ -920,6 +898,10 @@
               {
                 "key": "druid.cache.sizeInBytes",
                 "value": 10000000
+              },
+              {
+                "key": "druid.segmentCache.locations",
+                "value": "[{\"path\":\"${druid_persistent_dir}/segment-cache\",\"maxSize\":300000000000}]"
               }
             ],
             "configFormat": "properties"

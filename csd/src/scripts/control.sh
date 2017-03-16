@@ -72,7 +72,6 @@ fi
 export DRUID_LIB_DIR=$DRUID_HOME/lib
 
 perl -pi -e "s#{{DRUID_HOME}}#${DRUID_HOME}#" ${DRUID_CONF_DIR}/_common/common.runtime.properties
-perl -pi -e "s#{{DRUID_PERSIST_DIR}}#${DRUID_PERSISTENT_DIR}#" ${DRUID_CONF_DIR}/${NODE_TYPE}/runtime.properties
 
 # convert log4j properties to log4j2 xml
 python $SCRIPT_DIR/log4j_conv.py -i $CONF_DIR/log4j.properties -o $CONF_DIR/log4j2.xml
