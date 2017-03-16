@@ -167,7 +167,7 @@
       "label": "Druid Indexer Logs Directory",
       "description": "The directory to store logs.",
       "configName": "druid.indexer.logs.directory",
-      "default": "/druid/log",
+      "default": "/user/druid/log",
       "type": "string"
     }
   ],

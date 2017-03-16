@@ -106,8 +106,8 @@ DRUID_JAVA_OPTS="$DRUID_JAVA_OPTS $CSD_JAVA_OPTS $COMMON_JAVA_OPTS"
 
 case ${CMD} in
     (start)
-        echo java $DRUID_JAVA_OPTS -cp $DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
-        exec java $DRUID_JAVA_OPTS -cp $DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
+        echo java $DRUID_JAVA_OPTS -cp $HADOOP_CONF_DIR:$DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
+        exec java $DRUID_JAVA_OPTS -cp $HADOOP_CONF_DIR:$DRUID_CONF_DIR/_common:$DRUID_CONF_DIR/$NODE_TYPE:$DRUID_LIB_DIR/* io.druid.cli.Main server $NODE_TYPE
         ;;
     (*)
         echo "Unknown command ${CMD}"
