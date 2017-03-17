@@ -13,11 +13,17 @@ make clean install
 
 # Parcels Installation
 
-Put dist/pracels and manifest files in a web server.
-Add the URL to the CDH Parcel Repo
+Copy dist/parcels/* to /opt/cloudera/parcel-repo
+
+```
+cp dist/parcels/DRUID-0.9.2-0.0.3-el6.parcel /opt/cloudera/parcel-repo
+cp dist/parcels/DRUID-0.9.2-0.0.3-el6.parcel.sha /opt/cloudera/parcel-repo
+cp dist/manifest.json /opt/cloudera/parcel-repo
+chown cloudera-scm:cloudera-scm /opt/cloudera/parcel-repo/*
+```
 
 Refersh parcel screen and make sure DRUID appears in the list.
-Download, distribute, and activate.
+Ddistribute, and activate.
 
 
 # CSD Installation
@@ -30,7 +36,14 @@ chown cloudera-scm:cloudera-scm /opt/cloudera/csd/DRUID-5.8.0.jar
 chmod 644 /opt/cloudera/csd/DRUID-5.8.0.jar
 ```
 
-(re)install CSD
+Install CSD
+
+```
+curl http://localhost:7180/cmf/csd/refresh
+curl http://localhost:7180/cmf/csd/install?csdName=DRUID-5.8.0
+```
+
+Reinstall CSD
 
 ```
 curl http://localhost:7180/cmf/csd/reinstall?csdName=DRUID-5.8.0
