@@ -673,6 +673,14 @@
           "configName": "druid.indexer.task.restoreTasksOnRestart",
           "default": "true",
           "type": "boolean"
+        },
+        {
+          "name": "druid_indexer_task_defaultHadoopCoordinates",
+          "label": "Druid Indexer Task Default Hadoop Coordinates",
+          "description": "Hadoop version to use with HadoopIndexTasks that do not request a particular version.",
+          "configName": "druid.indexer.task.defaultHadoopCoordinates",
+          "default": "[\"org.apache.hadoop:hadoop-client:2.3.0\"]",
+          "type": "string"
         }
       ],
       "configWriter": {
@@ -734,16 +742,13 @@
               "druid_indexer_runner_javaOptsArray",
               "druid_worker_capacity",
               "druid_indexer_task_restoreTasksOnRestart",
+              "druid_indexer_task_defaultHadoopCoordinates",
               "druid_server_http_numThreads"
             ],
             "additionalConfigs": [
               {
                 "key": "druid.service",
                 "value": "druid/middlemanager"
-              },
-              {
-                "key": "druid.indexer.task.defaultHadoopCoordinates",
-                "value": "[\"org.apache.hadoop:hadoop-client:2.3.0\"]"
               },
               {
                 "key": "druid.indexer.task.baseTaskDir",

@@ -76,7 +76,7 @@ perl -pi -e "s#{{DRUID_HOME}}#${DRUID_HOME}#" ${DRUID_CONF_DIR}/_common/common.r
 # convert log4j properties to log4j2 xml
 python $SCRIPT_DIR/log4j_conv.py -i $CONF_DIR/log4j.properties -o $CONF_DIR/log4j2.xml
 
-COMMON_JAVA_OPTS="-Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.io.tmpdir=$CONF_DIR/tmp -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile=$CONF_DIR/log4j2.xml -XX:MaxPermSize=256m"
+COMMON_JAVA_OPTS="-server -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.io.tmpdir=$CONF_DIR/tmp -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dlog4j.configurationFile=$CONF_DIR/log4j2.xml -XX:MaxPermSize=256m"
 
 
 # Configure JAVA options for each type
