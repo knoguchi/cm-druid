@@ -3,12 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>com.cloudera</groupId>
-    <artifactId>csd</artifactId>
-    <version>5.8.0</version>
-  </parent>
-
   <groupId>com.cloudera.csd</groupId>
   <artifactId>DRUID</artifactId>
   <version>5.8.0</version>
@@ -39,6 +33,7 @@
       <plugin>
         <groupId>com.cloudera.enterprise</groupId>
         <artifactId>schema-validator-maven-plugin</artifactId>
+        <version>${project.version}</version>
         <executions>
           <execution>
             <id>validate-schema</id>
@@ -46,5 +41,5 @@
         </executions>
       </plugin>
     </plugins>
-   </build>
+  </build>
 </project>
