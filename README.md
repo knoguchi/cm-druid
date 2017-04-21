@@ -16,8 +16,8 @@ make clean install
 Copy dist/parcels/* to /opt/cloudera/parcel-repo
 
 ```
-cp dist/parcels/DRUID-0.9.2-0.0.3-el6.parcel /opt/cloudera/parcel-repo
-cp dist/parcels/DRUID-0.9.2-0.0.3-el6.parcel.sha /opt/cloudera/parcel-repo
+cp dist/parcels/DRUID-0.10.0-0.0.4-el6.parcel /opt/cloudera/parcel-repo
+cp dist/parcels/DRUID-0.10.0-0.0.4-el6.parcel.sha /opt/cloudera/parcel-repo
 cp dist/manifest.json /opt/cloudera/parcel-repo
 chown cloudera-scm:cloudera-scm /opt/cloudera/parcel-repo/*
 ```
@@ -48,3 +48,15 @@ Reinstall CSD
 ```
 curl http://localhost:7180/cmf/csd/reinstall?csdName=DRUID-5.8.0
 ```
+
+# Upgrade Druid
+
+In order to upgrade Druid from 0.9.2...
+- checkout this repo
+- rebuild the parcel
+- upload the parcel
+- distribute, activate it
+- restart the Druid
+
+Please note, Druid 0.10.0 requires Java1.8.  Please upgrade Java for CM, agent and the services if not 1.8.
+The Druid batch job runs in Hadoop.  The batch job would fail if the Java for the Hadoop is not 1.8.
