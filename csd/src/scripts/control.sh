@@ -29,6 +29,12 @@ function log {
 log "Running Druid CSD control script..."
 log "Detected CDH_VERSION of [$CDH_VERSION]"
 
+
+if [ -d "/usr/lib/jvm/java-8-oracle" ]; then
+  log "Detected Oracle Java 8"
+  export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+fi
+
 # Set this to not source defaults
 export BIGTOP_DEFAULTS_DIR=""
 
