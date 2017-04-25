@@ -54,8 +54,7 @@ curl http://localhost:7180/cmf/csd/reinstall?csdName=DRUID-5.8.0
 
 # Upgrade Druid
 
-In order to upgrade Druid from 0.9.2 to 0.10.0, you need Java1.8.
-Java version for Hadoop must be upgraded as well in order for the Druid batch job to run.
+The Druid 0.10, the latest release, requires Java1.8. Java version for Hadoop must be upgraded as well in order for the Druid batch job to run.
 
 - install oracle-java8
 - set Java Home in the CM "Hosts" -> "Configurations" -> "Advanced".
