@@ -22,8 +22,11 @@ cp dist/manifest.json /opt/cloudera/parcel-repo
 chown cloudera-scm:cloudera-scm /opt/cloudera/parcel-repo/*
 ```
 
-Refersh parcel screen and make sure DRUID appears in the list.
-Ddistribute, and activate.
+Refersh the CM's parcels screen, and make sure DRUID appears in the list.
+Then, click distribute, and activate.
+
+If you are using one of extensions from "contributes", you'd have to manually run pull-deps
+command at /opt/cloudera/pracels/DRUID.  This is a known limitation for now.
 
 
 # CSD Installation
@@ -51,12 +54,15 @@ curl http://localhost:7180/cmf/csd/reinstall?csdName=DRUID-5.8.0
 
 # Upgrade Druid
 
-In order to upgrade Druid from 0.9.2...
+In order to upgrade Druid from 0.9.2 to 0.10.0, you need Java1.8.
+Java version for Hadoop must be upgraded as well in order for the Druid batch job to run.
+
+- install oracle-java8
+- set Java Home in the CM "Hosts" -> "Configurations" -> "Advanced".
+- restart CDH services.  CM itself is still running with Java1.7.
+
 - checkout this repo
 - rebuild the parcel
 - upload the parcel
 - distribute, activate it
 - restart the Druid
-
-Please note, Druid 0.10.0 requires Java1.8.  Please upgrade Java for CM, agent and the services if not 1.8.
-The Druid batch job runs in Hadoop.  The batch job would fail if the Java for the Hadoop is not 1.8.
