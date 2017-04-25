@@ -58,7 +58,7 @@ The Druid 0.10, the latest release, requires Java1.8. Java version for Hadoop mu
 
 - install oracle-java8
 - set Java Home in the CM "Hosts" -> "Configurations" -> "Advanced".
-- restart CDH services.  CM itself is still running with Java1.7.
+- restart CDH services.
 
 - checkout this repo
 - rebuild the parcel
