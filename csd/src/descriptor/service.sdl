@@ -68,7 +68,7 @@
       "name": "druid_persistent_dir",
       "label": "Local Persistent Directory",
       "description": "Druid saves tasks and segments temporarily in the local disk.  This directory must retain data over reboot and reconfiguration.",
-      "default": "/var/tmp/druid",
+      "default": "/var/lib/druid",
       "type": "path",
       "required": "true",
       "pathType": "localDataDir",
