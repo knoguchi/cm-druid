@@ -171,7 +171,7 @@
       "type": "string"
     },
     {
-      "name": "druid_javascript_enable",
+      "name": "druid_javascript_enabled",
       "label": "Druid JavaScript",
       "description": "Set to true to enable JavaScript functionality. This affects the JavaScript parser, filter, extractionFn, aggregator, post-aggregator, router strategy, and worker selection strategy.",
       "configName": "druid.javascript.enabled",
