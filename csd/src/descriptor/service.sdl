@@ -169,6 +169,22 @@
       "configName": "druid.indexer.logs.directory",
       "default": "/user/druid/log",
       "type": "string"
+    },
+    {
+      "name": "druid_javascript_enable",
+      "label": "Druid JavaScript",
+      "description": "Set to true to enable JavaScript functionality. This affects the JavaScript parser, filter, extractionFn, aggregator, post-aggregator, router strategy, and worker selection strategy.",
+      "configName": "druid.javascript.enabled",
+      "default": "false",
+      "type": "boolean"
+    },
+    {
+      "name": "druid_sql_enable",
+      "label": "Druid SQL",
+      "description": "Whether to enable SQL at all, including background metadata fetching. If false, this overrides all other SQL-related properties and disables SQL metadata, serving, and planning completely.",
+      "configName": "druid.sql.enable",
+      "default": "false",
+      "type": "boolean"
     }
   ],
   "rolesWithExternalLinks": [
@@ -246,7 +262,9 @@
               "druid_storage_dir",
               "druid_storage_type",
               "druid_zk_paths_base",
-              "druid_zk_service_host"
+              "druid_zk_service_host",
+              "druid_javascript_enabled",
+              "druid_sql_enable"
             ],
             "additionalConfigs": [
               {
@@ -378,7 +396,9 @@
               "druid_storage_dir",
               "druid_storage_type",
               "druid_zk_paths_base",
-              "druid_zk_service_host"
+              "druid_zk_service_host",
+              "druid_javascript_enabled",
+              "druid_sql_enable"
             ],
             "additionalConfigs": [
               {
@@ -505,7 +525,9 @@
               "druid_storage_dir",
               "druid_storage_type",
               "druid_zk_paths_base",
-              "druid_zk_service_host"
+              "druid_zk_service_host",
+              "druid_javascript_enabled",
+              "druid_sql_enable"
             ],
             "additionalConfigs": [
               {
@@ -699,7 +721,9 @@
               "druid_storage_dir",
               "druid_storage_type",
               "druid_zk_paths_base",
-              "druid_zk_service_host"
+              "druid_zk_service_host",
+              "druid_javascript_enabled",
+              "druid_sql_enable"
             ],
             "additionalConfigs": [
               {
@@ -824,7 +848,9 @@
               "druid_storage_dir",
               "druid_storage_type",
               "druid_zk_paths_base",
-              "druid_zk_service_host"
+              "druid_zk_service_host",
+              "druid_javascript_enabled",
+              "druid_sql_enable"
             ],
             "additionalConfigs": [
               {
