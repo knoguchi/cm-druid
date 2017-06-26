@@ -213,8 +213,7 @@
         "url": "http://${host}:${overlord_port}"
       },
       "topology": {
-        "minInstances": 1,
-        "maxInstances": 1
+        "minInstances": 1
       },
       "logging": {
         "dir": "/var/log/druid",
@@ -347,8 +346,7 @@
         "url": "http://${host}:${coordinator_port}"
       },
       "topology": {
-        "minInstances": 1,
-        "maxInstances": 1
+        "minInstances": 1
       },
       "logging": {
         "dir": "/var/log/druid",
