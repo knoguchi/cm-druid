@@ -57,11 +57,6 @@ else
   USE_EMPTY_DEFAULT_FS=1
 fi
 
-# FIXME: CM copies core-site.xml and hdfs-site.xml only for unknown reasons.
-# Druid needs mapred-site.xml and yarn-site.xml.
-# For now set the HADOOP_CONF_DIR to point /etc/hadoop/conf/
-HADOOP_CONF_DIR=/etc/hadoop/conf/
-
 export HADOOP_CONF_DIR
 export USE_EMPTY_DEFAULT_FS
 

@@ -21,7 +21,11 @@
   "serviceDependencies": [
     {
       "name": "HDFS",
-      "required": "false"
+      "required": "true"
+    },
+    {
+      "name": "YARN",
+      "required": "true"
     }
   ],
   "hdfsDirs": [
